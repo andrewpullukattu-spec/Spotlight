@@ -6,7 +6,9 @@
   <title>Spotlight — one of you is lying</title>
   <meta name="description" content="One of you is lying. A four-phase party game of questions, bluffing and one very bright light." />
   <meta name="theme-color" content="#0c0d10" />
-  <link rel="stylesheet" href="style.css?v=2" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=Archivo+Black&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css?v=3" />
   <link rel="icon" href="icon.png" type="image/png">
   <link rel="apple-touch-icon" href="icon.png">
   <link rel="manifest" href="manifest.json">
@@ -134,7 +136,13 @@ setTimeout(function () {
 
   <!-- ═══════════════════════════════════════════════════════ PHASE 1 — Vote -->
   <section id="p1">
+    <div class="phase-bars">
+      <i class="on"></i><i></i><i></i><i></i>
+      <span>PHASE 1</span>
+    </div>
+    <div class="q-eyebrow">Your question · keep it secret</div>
     <div class="question-hero" id="p1Question"></div>
+    <div class="q-eyebrow" style="opacity:.6">Tap your pick</div>
 
     <div class="screen-content" style="padding-top:0">
       <div class="list" id="p1VoteList" style="display:flex;flex-direction:column;gap:10px"></div>
@@ -149,7 +157,11 @@ setTimeout(function () {
 
   <!-- ═══════════════════════════════════════════════════════ PHASE 2 — Interrogation -->
   <section id="p2">
-    <div class="screen-content" style="padding-top:calc(var(--safe-t) + 28px)">
+    <div class="phase-bars">
+      <i class="on"></i><i class="on"></i><i></i><i></i>
+      <span>PHASE 2</span>
+    </div>
+    <div class="screen-content" style="padding-top:8px">
 
       <!-- Question -->
       <div class="gcard" style="text-align:center">
@@ -178,10 +190,13 @@ setTimeout(function () {
 
   <!-- ═══════════════════════════════════════════════════════ PHASE 3 — Final Vote -->
   <section id="p3">
-    <div style="padding:calc(var(--safe-t) + 20px) 18px 12px 18px">
-      <div class="phase-label">Final Vote</div>
-      <div style="font-size:24px;font-weight:800">Who is the Imposter?</div>
-      <div class="small muted" style="margin-top:4px">Hidden until everyone votes</div>
+    <div class="phase-bars">
+      <i class="on"></i><i class="on"></i><i class="on"></i><i></i>
+      <span>PHASE 3</span>
+    </div>
+    <div style="padding:4px 18px 14px 18px">
+      <div class="slab">WHO IS THE<br>IMPOSTER?</div>
+      <div class="small muted" style="margin-top:6px">Locked and hidden until everyone has voted.</div>
     </div>
 
     <div class="screen-content" style="padding-top:0">
@@ -263,8 +278,8 @@ setTimeout(function () {
 
 </div><!-- /shell -->
 
-<script src="questions.js?v=2"></script>
-<script type="module" src="game.js?v=2"></script>
+<script src="questions.js?v=3"></script>
+<script type="module" src="game.js?v=3"></script>
 
 <script>
 // Toggle deck panel open/close

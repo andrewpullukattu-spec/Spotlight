@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap');
+/* Archivo + Archivo Black are loaded via <link> in the HTML head. */
 
 :root {
   /* Spotlight — the beam is the brand. --red kept as an alias so existing rules still resolve. */
@@ -31,7 +31,7 @@ body {
   min-height: 100dvh;
   background: var(--bg);
   color: var(--text);
-  font-family: 'DM Sans', system-ui, sans-serif;
+  font-family: Archivo, system-ui, sans-serif;
   display: block;
   -webkit-font-smoothing: antialiased;
 }
@@ -114,7 +114,7 @@ input {
   border: 1px solid var(--border);
   border-radius: 16px;
   color: var(--text);
-  font-family: 'DM Sans', sans-serif;
+  font-family: Archivo, sans-serif;
   font-size: 18px;
   font-weight: 500;
   outline: none;
@@ -135,7 +135,7 @@ button {
   border: 1px solid var(--border);
   background: var(--card);
   color: var(--text);
-  font-family: 'DM Sans', sans-serif;
+  font-family: Archivo, sans-serif;
   font-size: 18px;
   font-weight: 600;
   cursor: pointer;
@@ -174,7 +174,7 @@ button:active { transform: scale(0.97); opacity: 0.88; }
   border: 1px solid var(--border);
   border-radius: 14px;
   color: var(--text);
-  font-family: 'DM Sans', sans-serif;
+  font-family: Archivo, sans-serif;
   font-size: 18px;
   font-weight: 600;
   padding: 20px 18px;
@@ -333,16 +333,14 @@ button:active { transform: scale(0.97); opacity: 0.88; }
 
 /* ── PHASE 1 — BIG QUESTION ── */
 .question-hero {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: calc(var(--safe-t) + 40px) 28px 30px;
-  text-align: center;
-  font-size: 28px;
-  font-weight: 700;
-  line-height: 1.4;
-  min-height: 35vh;
+  padding: 2px 20px 18px;
+  font-family: 'Archivo Black', Archivo, sans-serif;
+  font-weight: 400;
+  font-size: clamp(30px, 9.2vw, 40px);
+  line-height: 0.99;
+  letter-spacing: -0.025em;
+  text-wrap: pretty;
+  flex-shrink: 0;
 }
 
 /* ── TIMER ── */
@@ -652,3 +650,269 @@ button, .vote-btn, .deck-card {
 .verdict-banner.caught::before  { background: linear-gradient(to bottom, rgba(34,197,94,0.45), rgba(34,197,94,0) 82%); }
 .verdict-banner.escaped::before { background: linear-gradient(to bottom, rgba(224,48,48,0.45), rgba(224,48,48,0) 82%); }
 .verdict-word, .verdict-sub { position: relative; z-index: 1; }
+
+
+/* ══════════════════════════════════════════════════════════════════
+   1b LAYOUT — phase bars, mugshot vote grid, slab headlines
+   ══════════════════════════════════════════════════════════════════ */
+
+/* ── phase progress bars ── */
+.phase-bars {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: calc(var(--safe-t) + 14px) 20px 14px;
+  flex-shrink: 0;
+}
+.phase-bars i {
+  flex: 1;
+  height: 5px;
+  border-radius: 3px;
+  background: rgba(244,245,247,0.14);
+}
+.phase-bars i.on { background: var(--hot); }
+.phase-bars span {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1.6px;
+  color: #f0a94a;
+  margin-left: 4px;
+}
+
+/* ── eyebrow label above a question ── */
+.q-eyebrow {
+  padding: 0 20px 9px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1.6px;
+  text-transform: uppercase;
+  color: var(--text2);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+.q-eyebrow::before {
+  content: "";
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  background: var(--hot);
+  flex: none;
+}
+
+/* ── Archivo Black slab headline ── */
+.slab {
+  font-family: 'Archivo Black', Archivo, sans-serif;
+  font-weight: 400;
+  font-size: clamp(32px, 10vw, 42px);
+  line-height: 0.95;
+  letter-spacing: -0.03em;
+  color: var(--text);
+}
+
+/* ── PHASE 1 — mugshot vote grid ── */
+#p1VoteList {
+  display: grid !important;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  align-content: start;
+}
+.vote-tile {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 15px 14px;
+  min-height: 116px;
+  border-radius: 18px;
+  border: 1px solid var(--border);
+  background: var(--card);
+  color: var(--text);
+  font-family: Archivo, sans-serif;
+  cursor: pointer;
+  text-align: left;
+  transition: transform 0.12s, border-color 0.15s, background 0.15s;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+.vote-tile:active { transform: scale(0.97); }
+.vt-av {
+  width: 42px; height: 42px;
+  border-radius: 12px;
+  background: var(--card2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Archivo Black', Archivo, sans-serif;
+  font-size: 15px;
+  color: rgba(244,245,247,0.82);
+  flex: none;
+}
+.vt-name {
+  font-family: 'Archivo Black', Archivo, sans-serif;
+  font-size: 18px;
+  line-height: 1;
+  letter-spacing: -0.01em;
+  text-transform: uppercase;
+  word-break: break-word;
+}
+.vt-tag {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1.4px;
+  opacity: 0.65;
+  min-height: 12px;
+}
+.vote-tile.selected {
+  background: var(--hot);
+  border-color: var(--hot);
+  color: var(--ink);
+}
+.vote-tile.selected .vt-av { background: rgba(20,13,6,0.17); color: var(--ink); }
+
+/* ── PHASE 3 — mugshot vote rows ── */
+.vote-row {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  padding: 13px 15px;
+  border-radius: 18px;
+  border: 1px solid var(--border);
+  background: var(--card);
+  color: var(--text);
+  font-family: Archivo, sans-serif;
+  cursor: pointer;
+  text-align: left;
+  transition: transform 0.12s, border-color 0.15s, background 0.15s;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+.vote-row:active { transform: scale(0.98); }
+.vr-av {
+  width: 40px; height: 40px;
+  border-radius: 12px;
+  background: var(--card2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Archivo Black', Archivo, sans-serif;
+  font-size: 14px;
+  color: rgba(244,245,247,0.82);
+  flex: none;
+}
+.vr-name {
+  flex: 1;
+  font-family: 'Archivo Black', Archivo, sans-serif;
+  font-size: 19px;
+  letter-spacing: -0.01em;
+  text-transform: uppercase;
+}
+.vr-tag {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1.4px;
+  opacity: 0.7;
+}
+.vote-row.selected {
+  background: var(--hot);
+  border-color: var(--hot);
+  color: var(--ink);
+}
+.vote-row.selected .vr-av { background: rgba(20,13,6,0.17); color: var(--ink); }
+
+/* ── LOBBY — mugshot grid ── */
+.mug-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 14px 16px 10px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1.6px;
+  text-transform: uppercase;
+  color: var(--text2);
+}
+.mug-count { color: var(--green); }
+.mug-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  padding: 0 14px 16px;
+}
+.mug { position: relative; display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.mug-av {
+  width: 100%;
+  aspect-ratio: 1;
+  border-radius: 16px;
+  background: var(--card2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Archivo Black', Archivo, sans-serif;
+  font-size: 18px;
+  color: rgba(244,245,247,0.82);
+}
+.mug.me .mug-av {
+  border: 1.5px solid var(--hot);
+  color: #f0a94a;
+}
+.mug-name {
+  font-size: 11px;
+  font-weight: 600;
+  max-width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.mug-kick {
+  position: absolute;
+  top: -5px; right: -5px;
+  width: 22px; height: 22px;
+  padding: 0;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: #f07070;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1;
+  cursor: pointer;
+}
+
+/* ── deck tiles: rows, not squares ── */
+.deck-card {
+  aspect-ratio: auto;
+  padding: 14px;
+  border-radius: 16px;
+  justify-content: flex-start;
+}
+.dk-icon { font-size: 20px; margin-bottom: 5px; }
+.dk-name { font-size: 15px; }
+
+/* ── primary buttons pick up the slab face ── */
+.btn-primary {
+  font-family: 'Archivo Black', Archivo, sans-serif;
+  font-weight: 400;
+  font-size: 17px;
+  letter-spacing: 0.01em;
+  border-radius: 999px;
+}
+button { border-radius: 999px; }
+.gcard, input { border-radius: 18px; }
+
+/* ── lobby code: slab numerals ── */
+.lobby-code-display {
+  font-family: 'Archivo Black', Archivo, sans-serif;
+  font-weight: 400;
+  font-size: 46px;
+  letter-spacing: 4px;
+}
+
+/* ── reveal type ── */
+.accused-name, .odd-name-big, .verdict-word, .countdown-num {
+  font-family: 'Archivo Black', Archivo, sans-serif;
+  font-weight: 400;
+  letter-spacing: -0.035em;
+}

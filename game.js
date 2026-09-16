@@ -598,6 +598,10 @@ function render(state) {
 }
 
 // ─── LOBBY ────────────────────────────────────────────────────────────────────
+function initials(name) {
+  return String(name || "?").trim().slice(0, 2).toUpperCase();
+}
+
 function renderLobbyPlayers(state) {
   const players = state.players || {};
   const order   = getOrder(state);
@@ -612,36 +616,27 @@ function renderLobbyPlayers(state) {
     return;
   }
 
-  const half = Math.ceil(order.length / 2);
-  const col1 = order.slice(0, half);
-  const col2 = order.slice(half);
-
-  const renderCol = (pids) => pids.map(pid => {
+  const mugs = order.map(pid => {
     const name = players[pid];
     if (!name) return "";
     const isMe       = pid === playerId;
     const isThisHost = pid === state.hostId;
     return `
-      <div class="player-row">
-        <span class="player-name-text">
-          ${escapeHtml(name)}
-          ${isMe       ? '<span class="you-tag">YOU</span>'   : ""}
-          ${isThisHost ? '<span class="crown-tag">👑</span>' : ""}
-        </span>
+      <div class="mug${isMe ? " me" : ""}">
+        <div class="mug-av">${escapeHtml(initials(name))}</div>
+        <div class="mug-name">${escapeHtml(name)}${isThisHost ? " ★" : ""}</div>
         ${isHost && !isMe
-          ? `<button class="kick-btn btn-small" onclick="kickPlayer(\'${pid}\')">✕</button>`
+          ? `<button class="mug-kick" onclick="kickPlayer(\'${pid}\')" aria-label="Remove player">✕</button>`
           : ""}
       </div>`;
   }).join("");
 
   document.getElementById("playersBox").innerHTML = `
-    <div style="padding:10px 0 4px 14px;font-size:11px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:var(--text2)">
-      ${order.length} Player${order.length !== 1 ? "s" : ""}
+    <div class="mug-head">
+      <span>In the room</span>
+      <span class="mug-count">${order.length} / 12</span>
     </div>
-    <div class="player-list-grid">
-      <div class="player-col">${renderCol(col1)}</div>
-      <div class="player-col">${renderCol(col2)}</div>
-    </div>`;
+    <div class="mug-grid">${mugs}</div>`;
 }
 
 function renderDeckSelector(state) {
@@ -725,10 +720,15 @@ function renderPhase1(state) {
   getOrder(state).forEach(pid => {
     const name = players[pid];
     if (!name) return;
-    const b       = document.createElement("button");
-    b.textContent = pid === playerId ? `${name} (You)` : name;
-    b.className   = `vote-btn${myVote === pid ? " selected" : ""}`;
-    b.onclick     = () => castP1Vote(pid);
+    const isMe = pid === playerId;
+    const on   = myVote === pid;
+    const b    = document.createElement("button");
+    b.className = `vote-tile${on ? " selected" : ""}`;
+    b.innerHTML = `
+      <span class="vt-av">${escapeHtml(initials(name))}</span>
+      <span class="vt-name">${escapeHtml(name)}</span>
+      <span class="vt-tag">${on ? "YOUR VOTE" : (isMe ? "YOU" : "")}</span>`;
+    b.onclick = () => castP1Vote(pid);
     list.appendChild(b);
   });
 
@@ -809,10 +809,15 @@ function renderPhase3(state) {
   getOrder(state).forEach(pid => {
     const name = players[pid];
     if (!name) return;
-    const b       = document.createElement("button");
-    b.textContent = pid === playerId ? `${name} (You)` : name;
-    b.className   = `vote-btn${myVote === pid ? " selected" : ""}`;
-    b.onclick     = () => castP3Vote(pid);
+    const isMe = pid === playerId;
+    const on   = myVote === pid;
+    const b    = document.createElement("button");
+    b.className = `vote-row${on ? " selected" : ""}`;
+    b.innerHTML = `
+      <span class="vr-av">${escapeHtml(initials(name))}</span>
+      <span class="vr-name">${escapeHtml(name)}</span>
+      <span class="vr-tag">${on ? "YOUR VOTE" : (isMe ? "YOU" : "")}</span>`;
+    b.onclick = () => castP3Vote(pid);
     list.appendChild(b);
   });
 
