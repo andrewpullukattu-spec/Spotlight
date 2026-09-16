@@ -79,7 +79,8 @@ function getOrder(state) {
 }
 
 function randomCode() {
-  return Math.random().toString(36).substring(2, 8).toUpperCase();
+  // 4-digit numeric code: 1000–9999, so it never starts with a 0
+  return String(Math.floor(1000 + Math.random() * 9000));
 }
 
 function fmtTime(ms) {
@@ -110,13 +111,34 @@ function revealStep(id, delay) {
 }
 
 // ─── QUESTION PICKING (per-deck, no repeats) ──────────────────────────────────
-function pickTwoQuestions(state) {
-  const deckKey = state.activeDeck || "all";
-  const deck    = DECKS[deckKey] || DECKS.all;
-  const pool    = deck.questions;
+// Which decks the host has stacked. Falls back to the old single-deck field
+// so lobbies created before this change still work.
+function activeDeckKeys(state) {
+  const raw = Array.isArray(state.activeDecks) && state.activeDecks.length
+    ? state.activeDecks
+    : [state.activeDeck || "all"];
+  const keys = [...new Set(raw.filter(k => DECKS[k]))].sort();
+  return keys.length ? keys : ["all"];
+}
 
-  const usedKey = `usedQ_${deckKey}`;
-  const lastKey = `lastQ_${deckKey}`;
+// Deduped union of every selected deck's questions.
+function buildPool(keys) {
+  return [...new Set(keys.flatMap(k => DECKS[k].questions))];
+}
+
+function deckStackLabel(keys) {
+  if (keys.length === 1) return DECKS[keys[0]]?.name || "All Decks";
+  return keys.map(k => DECKS[k]?.name || k).join(" + ");
+}
+
+function pickTwoQuestions(state) {
+  const keys = activeDeckKeys(state);
+  const pool = buildPool(keys);
+
+  // Used-questions are tracked per stack, so changing the selection starts fresh.
+  const stackId = keys.join("_");
+  const usedKey = `usedQ_${stackId}`;
+  const lastKey = `lastQ_${stackId}`;
   const used    = Array.isArray(state[usedKey]) ? state[usedKey] : [];
 
   let available = pool.map((_, i) => i).filter(i => !used.includes(i));
@@ -238,7 +260,18 @@ window.leaveRoom = async function() {
 
 // ─── DECK SELECTION (host only) ───────────────────────────────────────────────
 window.selectDeck = async function(deckKey) {
-  await updateDoc(roomRef(), { activeDeck: deckKey });
+  const snap = await getDoc(roomRef());
+  if (!snap.exists()) return;
+  const current = activeDeckKeys(snap.data());
+  const on      = current.includes(deckKey);
+
+  // Toggling off the last remaining deck would leave no questions — block it.
+  if (on && current.length === 1) {
+    return toast("Keep at least one deck selected.", "error");
+  }
+
+  const next = on ? current.filter(k => k !== deckKey) : [...current, deckKey];
+  await updateDoc(roomRef(), { activeDecks: next.sort(), activeDeck: next[0] });
 };
 
 // ─── DECK UNLOCKS ─────────────────────────────────────────────────────────────
@@ -300,11 +333,9 @@ window.createRoom = async function() {
   const name = getName();
   if (!name) return toast("Enter your name first.", "error");
   
-  roomId = randomCode(); 
-  
-  if (!roomId || roomId.length < 6) {
-    roomId = Math.random().toString(36).substring(2, 8).toUpperCase();
-  }
+  roomId = randomCode();
+
+  if (!/^[0-9]{4}$/.test(roomId)) roomId = String(Math.floor(1000 + Math.random() * 9000));
   
   await joinRoomInternal(true);
 };
@@ -312,8 +343,9 @@ window.createRoom = async function() {
 window.joinRoom = async function() {
   const name = getName();
   if (!name) return toast("Enter your name first.", "error");
-  roomId = (document.getElementById("codeInput")?.value || "").trim().toUpperCase();
+  roomId = (document.getElementById("codeInput")?.value || "").replace(/\D/g, "").slice(0, 4);
   if (!roomId) return toast("Enter a lobby code.", "error");
+  if (roomId.length < 4) return toast("Lobby codes are 4 digits.", "error");
   await joinRoomInternal(false);
 };
 
@@ -358,7 +390,10 @@ async function joinRoomInternal(isHost) {
     hostId:      isHost ? playerId : (data?.hostId || null),
     phase:       data?.phase      || "lobby",
     round:       data?.round      || 0,
-    activeDeck:  data?.activeDeck || "casual1",
+    activeDeck:  data?.activeDeck  || "casual1",
+    activeDecks: Array.isArray(data?.activeDecks) && data.activeDecks.length
+                   ? data.activeDecks
+                   : [data?.activeDeck || "casual1"],
     playerOrder: nextOrder,
     players:     { ...(data?.players || {}), [playerId]: name },
     scores:      { ...(data?.scores  || {}), [playerId]: data?.scores?.[playerId] ?? 0 }
@@ -562,7 +597,7 @@ function render(state) {
   const phase = state.phase;
   if (!phase || phase === "lobby") {
     show("lobby");
-    if (lastStateCache.playersHash !== currentPlayersHash || lastStateCache.deckKey !== state.activeDeck) {
+    if (lastStateCache.playersHash !== currentPlayersHash || lastStateCache.deckKey !== activeDeckKeys(state).join("_")) {
       renderLobbyPlayers(state);
       renderDeckSelector(state);
     }
@@ -594,7 +629,7 @@ function render(state) {
   lastStateCache.phase       = phase;
   lastStateCache.playersHash = currentPlayersHash;
   lastStateCache.votesHash   = currentVotesHash;
-  lastStateCache.deckKey     = state.activeDeck;
+  lastStateCache.deckKey     = activeDeckKeys(state).join("_");
 }
 
 // ─── LOBBY ────────────────────────────────────────────────────────────────────
@@ -643,7 +678,7 @@ function renderDeckSelector(state) {
   const wrap     = document.getElementById("deckSelectorWrap");
   const viewWrap = document.getElementById("deckViewerWrap");
   const isHost   = state.hostId === playerId;
-  const current  = state.activeDeck || "all";
+  const selected = activeDeckKeys(state);
 
   wrap.style.display     = isHost ? "block" : "none";
   viewWrap.style.display = isHost ? "none"  : "block";
@@ -657,7 +692,7 @@ function renderDeckSelector(state) {
       const total    = deck.questions.length;
       const locked   = !isDeckUnlocked(key);
       const card     = document.createElement("div");
-      card.className = `deck-card ${deck.cls}${current === key ? " active" : ""}${locked ? " locked" : ""}`;
+      card.className = `deck-card ${deck.cls}${selected.includes(key) ? " active" : ""}${locked ? " locked" : ""}`;
       card.innerHTML = `
         <div class="dk-check">✓</div>
         ${locked ? '<div class="dk-lock">🔒</div>' : ""}
@@ -665,20 +700,20 @@ function renderDeckSelector(state) {
         <div class="dk-name">${deck.name}</div>
         <div class="dk-desc">${deck.desc}</div>
         <div class="dk-desc" style="margin-top:4px;color:rgba(255,255,255,0.3)">
-          ${locked ? "Watch an ad to unlock" : `${total - used}/${total} left`}
+          ${locked ? "Watch an ad to unlock" : `${total} questions`}
         </div>
       `;
       card.onclick = () => attemptSelectDeck(key);
       grid.appendChild(card);
     });
-    const used  = Array.isArray(state[`usedQ_${current}`]) ? state[`usedQ_${current}`].length : 0;
-    const total = DECKS[current]?.questions.length || 0;
+    const stackId = selected.join("_");
+    const usedArr = state[`usedQ_${stackId}`];
+    const used    = Array.isArray(usedArr) ? usedArr.length : 0;
+    const total   = buildPool(selected).length;
     document.getElementById("deckUsedInfo").textContent =
-      `Active: ${DECKS[current]?.name || "All"} — ${total - used}/${total} questions remaining`;
+      `${selected.length} deck${selected.length === 1 ? "" : "s"} stacked — ${total - used}/${total} questions remaining`;
   } else {
-    const icon = DECKS[current]?.icon || "🃏";
-    const name = DECKS[current]?.name || "All Decks";
-    document.getElementById("deckViewerLabel").textContent = `${icon} Deck: ${name}`;
+    document.getElementById("deckViewerLabel").textContent = `🃏 ${deckStackLabel(selected)}`;
   }
 }
 
@@ -946,7 +981,7 @@ if (savedName) document.getElementById("nameInput").value = savedName;
 const params    = new URLSearchParams(location.search);
 const roomParam = params.get("room");
 if (roomParam) {
-  const code = roomParam.toUpperCase();
+  const code = String(roomParam).replace(/\D/g, "").slice(0, 4);
   document.getElementById("codeInput").value           = code;
   document.getElementById("joinCodeLabel").textContent = code;
   document.getElementById("joinFromLink").style.display = "flex";

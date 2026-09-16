@@ -8,7 +8,7 @@
   <meta name="theme-color" content="#0c0d10" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=Archivo+Black&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=3" />
+  <link rel="stylesheet" href="style.css?v=4" />
   <link rel="icon" href="icon.png" type="image/png">
   <link rel="apple-touch-icon" href="icon.png">
   <link rel="manifest" href="manifest.json">
@@ -77,7 +77,7 @@ setTimeout(function () {
 
       <!-- Manual code entry -->
       <div id="joinManual" style="display:none;flex-direction:column;gap:12px">
-        <input id="codeInput" placeholder="Enter Code..." style="text-transform:uppercase;letter-spacing:4px;text-align:center;font-size:22px;font-weight:800" />
+        <input id="codeInput" placeholder="0000" inputmode="numeric" pattern="[0-9]*" maxlength="4" autocomplete="off" style="letter-spacing:10px;text-align:center;font-size:30px;font-weight:800" />
         <button class="btn-primary" onclick="joinRoom()">Join</button>
         <button class="btn-ghost" onclick="hideJoinInput()">Back</button>
       </div>
@@ -278,8 +278,8 @@ setTimeout(function () {
 
 </div><!-- /shell -->
 
-<script src="questions.js?v=3"></script>
-<script type="module" src="game.js?v=3"></script>
+<script src="questions.js?v=4"></script>
+<script type="module" src="game.js?v=4"></script>
 
 <script>
 // Toggle deck panel open/close
