@@ -4,13 +4,16 @@ import {
   getFirestore, doc, setDoc, updateDoc, getDoc, onSnapshot
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
+// Spotlight web app, registered in the existing odd1owt-ed87d Firebase project.
+// Same project as Odd1Owt, so all existing lobbies and data carry over.
 const firebaseConfig = {
-  apiKey: "AIzaSyCaJ-2d3r_qKcSs4aCdhvzZtjAImnZ8YM",
+  apiKey: "AIzaSyAdLNE93U2Uzq7T2fIK6CWu2cR4Gx6-G7k",
   authDomain: "odd1owt-ed87d.firebaseapp.com",
   projectId: "odd1owt-ed87d",
-  storageBucket: "odd1owt-ed87d.appspot.com",
+  storageBucket: "odd1owt-ed87d.firebasestorage.app",
   messagingSenderId: "615629953512",
-  appId: "1:615629953512:web:046f611961e7c1e556ec5d"
+  appId: "1:615629953512:web:8892231a4dded35856ec5d",
+  measurementId: "G-6HSXPMT495"
 };
 
 const app = initializeApp(firebaseConfig);

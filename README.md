@@ -57,11 +57,18 @@ gh repo create spotlight --public --source=. --push
 - ⚠️ These were generated with a fallback weight, not Archivo Black. Re-export from the
   design file before you ship to the stores.
 
+**Ads removed**
+- The AdSense script, the `.ad-banner-placeholder` element and its styles, and `ads.txt` are all gone.
+- `--ad-h` is kept in `:root` but set to `0px`, so the `calc()` rules in `.screen-bottom` and
+  `#toastContainer` still resolve. Set it back to `52px` and re-add the banner element if you
+  ever want ads again.
+
 **Deliberately unchanged**
 - `game.js` game logic, phase machine, and scoring (+1 to all non-Imposters on CAUGHT,
   +1 to the Imposter on ESCAPED).
-- The Firebase config — still points at the `odd1owt-ed87d` project. Your data and lobbies
-  are intact. Rename the Firebase project separately if you want, and update `game.js` lines 7–14.
+- The Firebase project — `odd1owt-ed87d`. Spotlight is registered as a new *web app* inside the
+  same project, so all existing lobbies and data carry over. Keys updated in `game.js`; no
+  database setup was needed.
 - `localStorage` keys (`odd1owt_pid`, `odd1owt_name`, `odd1owt_unlockedDecks`). Renaming these
   would silently log every existing player out of their saved name. Left alone on purpose.
 - `questions.js` — decks and questions are byte-identical.
@@ -71,6 +78,12 @@ gh repo create spotlight --public --source=. --push
 ## Still to do
 
 - Real icon export at store resolutions with the correct typeface.
+- Optional: wire up Google Analytics. The new config includes a `measurementId`, but nothing
+  reports to it yet. Add to `game.js` if you want it:
+  ```js
+  import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-analytics.js";
+  const analytics = getAnalytics(app);
+  ```
 - Optimistic UI on vote taps: paint the selection immediately, reconcile with Firestore after.
   Currently every vote waits on a network round-trip, which is the one place the app feels slower
   than the prototype.
@@ -88,5 +101,4 @@ questions.js     deck definitions                          (unchanged)
 manifest.json    PWA manifest
 about.html  contact.html  how-to-play.html  privacy.html
 icon.png  icon-512.png  icon-192.png  title.png
-ads.txt
 ```

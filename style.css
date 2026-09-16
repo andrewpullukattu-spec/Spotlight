@@ -17,7 +17,7 @@
   --ink: #140d06;
   --safe-b: env(safe-area-inset-bottom, 0px);
   --safe-t: env(safe-area-inset-top, 0px);
-  --ad-h: 52px;
+  --ad-h: 0px; /* no ad banner — kept at 0 so existing calc() rules still resolve */
 }
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -393,25 +393,6 @@ button:active { transform: scale(0.97); opacity: 0.88; }
 .toast.info    { border-color: rgba(255,183,3,0.4);  color: var(--gold); }
 @keyframes toastIn  { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
 @keyframes toastOut { from { opacity:1; } to { opacity:0; } }
-
-/* ── AD BANNER (placeholder — swap for real AdMob banner view once Capacitor is set up) ── */
-.ad-banner-placeholder {
-  position: fixed;
-  left: 0; right: 0; bottom: 0;
-  height: var(--ad-h);
-  padding-bottom: var(--safe-b);
-  background: var(--card2);
-  border-top: 1px solid var(--border);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.5px;
-  text-transform: uppercase;
-  color: var(--text2);
-  z-index: 500;
-}
 
 /* ── PHASE 4 REVEAL ── */
 .reveal-step { display: none; }
