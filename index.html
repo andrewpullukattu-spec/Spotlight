@@ -8,7 +8,7 @@
   <meta name="theme-color" content="#0c0d10" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=Archivo+Black&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=4" />
+  <link rel="stylesheet" href="style.css?v=5" />
   <link rel="icon" href="icon.png" type="image/png">
   <link rel="apple-touch-icon" href="icon.png">
   <link rel="manifest" href="manifest.json">
@@ -163,21 +163,24 @@ setTimeout(function () {
     </div>
     <div class="screen-content" style="padding-top:8px">
 
-      <!-- Question -->
-      <div class="gcard" style="text-align:center">
-        <div class="phase-label" style="margin-bottom:8px">The Question</div>
-        <div style="font-size:20px;font-weight:700;line-height:1.4" id="p2NormalQ"></div>
+      <!-- The real question, revealed -->
+      <div class="p2-qwrap">
+        <div class="phase-label">The real question was</div>
+        <div class="slab p2-q" id="p2NormalQ"></div>
       </div>
 
-      <!-- Timer -->
-      <div class="gcard center">
-        <div class="phase-label" style="margin-bottom:6px">Time Remaining</div>
+      <!-- Interrogate + timer, side by side -->
+      <div class="p2-timer-card">
+        <div class="p2-timer-copy">
+          <div class="phase-label">Interrogate</div>
+          <p>Talk it out. Defend your vote. Find the odd answer.</p>
+        </div>
         <div class="timer" id="p2Timer">05:00</div>
       </div>
 
-      <!-- Votes display -->
-      <div class="gcard" id="p2WhoVoted" style="min-height:140px"></div>
-      <div class="muted small center" style="margin-top: 8px;">Display Votes</div>
+      <!-- Phase 1 votes, grouped by who was accused -->
+      <div class="phase-label" style="padding:2px 2px 0">Phase 1 votes</div>
+      <div id="p2WhoVoted" class="p2-votes"></div>
 
     </div>
 
@@ -278,8 +281,8 @@ setTimeout(function () {
 
 </div><!-- /shell -->
 
-<script src="questions.js?v=4"></script>
-<script type="module" src="game.js?v=4"></script>
+<script src="questions.js?v=5"></script>
+<script type="module" src="game.js?v=5"></script>
 
 <script>
 // Toggle deck panel open/close

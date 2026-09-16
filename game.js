@@ -786,15 +786,30 @@ function renderPhase2(state) {
   const p1      = state.p1Votes || {};
 
   if (lastStateCache.votesHash !== hashObj(p1)) {
-    let html = `<div style="font-size:11px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:var(--text2);margin-bottom:10px">Phase 1 Votes</div>`;
+    // Group by who was voted FOR — the useful shape for an argument.
+    const byTarget = {};
     Object.entries(p1).forEach(([voter, target]) => {
-      html += `<div style="padding:10px 0;border-bottom:1px solid var(--border)">
-        <div style="font-size:13px;color:var(--text2);margin-bottom:3px">${escapeHtml(players[voter] || "?")}</div>
-        <div style="font-size:16px;font-weight:700">→ ${escapeHtml(players[target] || "?")}</div>
-      </div>`;
+      if (!byTarget[target]) byTarget[target] = [];
+      byTarget[target].push(players[voter] || "?");
     });
-    if (!Object.keys(p1).length) html += `<div class="small muted center" style="padding:20px">No votes yet</div>`;
-    document.getElementById("p2WhoVoted").innerHTML = html;
+
+    const rows = Object.entries(byTarget)
+      .sort((a, b) => b[1].length - a[1].length)
+      .map(([target, voters]) => {
+        const name   = players[target] || "?";
+        const shown  = voters.slice(0, 2).join(", ");
+        const extra  = voters.length > 2 ? ` +${voters.length - 2}` : "";
+        return `
+          <div class="v2-row">
+            <span class="v2-av">${escapeHtml(initials(name))}</span>
+            <span class="v2-name">${escapeHtml(name)}</span>
+            <span class="v2-voters">${escapeHtml(shown + extra)}</span>
+            <span class="v2-n">${voters.length}</span>
+          </div>`;
+      }).join("");
+
+    document.getElementById("p2WhoVoted").innerHTML = rows ||
+      `<div class="small muted center" style="padding:22px">No votes yet</div>`;
   }
 
   if (timerFrameId) {

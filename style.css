@@ -916,3 +916,84 @@ button { border-radius: 999px; }
   font-weight: 400;
   letter-spacing: -0.035em;
 }
+
+
+/* ══════════════════════════════════════════════════════════════════
+   PHASE 2 — the real question, the clock, and who accused whom
+   ══════════════════════════════════════════════════════════════════ */
+.p2-qwrap { display: flex; flex-direction: column; gap: 7px; flex-shrink: 0; }
+.p2-q {
+  font-size: clamp(26px, 8vw, 32px);
+  line-height: 1.02;
+  text-wrap: pretty;
+}
+
+.p2-timer-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 18px 20px;
+  border-radius: 22px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.p2-timer-copy { max-width: 160px; }
+.p2-timer-copy p {
+  margin-top: 5px;
+  font-size: 12px;
+  line-height: 1.35;
+  color: var(--text2);
+}
+.p2-timer-card .timer {
+  font-family: 'Archivo Black', Archivo, sans-serif;
+  font-weight: 400;
+  font-size: 44px;
+  letter-spacing: -0.03em;
+  text-align: right;
+}
+/* the card itself goes red when time is nearly up */
+.p2-timer-card:has(.timer.urgent) {
+  background: rgba(224,48,48,0.12);
+  border-color: rgba(224,48,48,0.45);
+}
+
+.p2-votes { display: flex; flex-direction: column; gap: 8px; }
+.v2-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 15px;
+  border-radius: 14px;
+  background: var(--card);
+}
+.v2-av {
+  width: 32px; height: 32px;
+  border-radius: 10px;
+  background: var(--card2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Archivo Black', Archivo, sans-serif;
+  font-size: 12px;
+  color: rgba(244,245,247,0.82);
+  flex: none;
+}
+.v2-name { font-size: 14px; font-weight: 700; flex: 1; }
+.v2-voters {
+  font-size: 12px;
+  color: var(--text2);
+  text-align: right;
+  max-width: 45%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.v2-n {
+  font-family: 'Archivo Black', Archivo, sans-serif;
+  font-size: 17px;
+  color: #f0a94a;
+  min-width: 16px;
+  text-align: right;
+}
