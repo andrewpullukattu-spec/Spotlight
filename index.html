@@ -26,6 +26,14 @@
   <div class="splash-dots"><i></i><i></i><i></i></div>
 </div>
 
+<script>
+// Failsafe: the splash lifts after 2.2s no matter what, even if game.js fails to load.
+setTimeout(function () {
+  var s = document.getElementById('splash');
+  if (s) { s.classList.add('gone'); setTimeout(function () { s.remove(); }, 450); }
+}, 2200);
+</script>
+
 <div id="toastContainer"></div>
 
 <div class="shell">

@@ -934,7 +934,7 @@ if (splashEl) {
     setTimeout(() => splashEl.remove(), 450);
   }, Math.max(0, minShow - (Date.now() - started)));
 }
-─────────
+
 const savedName = localStorage.getItem("odd1owt_name");
 if (savedName) document.getElementById("nameInput").value = savedName;
 
