@@ -468,8 +468,12 @@ window.hostSkipToFinal = async function() {
 
 // ─── VOTING ───────────────────────────────────────────────────────────────────
 async function castP1Vote(targetId) {
-  document.querySelectorAll("#p1VoteList .vote-btn").forEach(btn => {
-    btn.classList.toggle("selected", btn.onclick.toString().includes(targetId));
+  // Paint the selection instantly; Firestore confirms a moment later.
+  document.querySelectorAll("#p1VoteList .vote-tile").forEach(btn => {
+    const on = btn.dataset.pid === targetId;
+    btn.classList.toggle("selected", on);
+    const tag = btn.querySelector(".vt-tag");
+    if (tag) tag.textContent = on ? "YOUR VOTE" : (btn.dataset.me === "1" ? "YOU" : "");
   });
 
   try {
@@ -480,8 +484,11 @@ async function castP1Vote(targetId) {
 }
 
 async function castP3Vote(targetId) {
-  document.querySelectorAll("#p3VoteList .vote-btn").forEach(btn => {
-    btn.classList.toggle("selected", btn.onclick.toString().includes(targetId));
+  document.querySelectorAll("#p3VoteList .vote-row").forEach(btn => {
+    const on = btn.dataset.pid === targetId;
+    btn.classList.toggle("selected", on);
+    const tag = btn.querySelector(".vr-tag");
+    if (tag) tag.textContent = on ? "YOUR VOTE" : (btn.dataset.me === "1" ? "YOU" : "");
   });
 
   try {
@@ -492,57 +499,88 @@ async function castP3Vote(targetId) {
   }
 }
 
-// ─── HOST AUTO-ADVANCE ────────────────────────────────────────────────────────
+// ─── AUTO-ADVANCE ─────────────────────────────────────────────────────────────
+// The host advances the phase immediately. Every other client watches the same
+// condition and advances as a backup on a stagger, so a sleeping or disconnected
+// host can no longer strand the lobby. Each writer re-reads the doc first, so
+// whoever gets there second does nothing.
 let advancingPhase = null;
+let advanceTimer   = null;
+
+function advanceDelay(state) {
+  if (state.hostId === playerId) return 0;
+  const ids = Object.keys(state.players || {}).sort();
+  const rank = Math.max(0, ids.indexOf(playerId));
+  return 2500 + rank * 700;
+}
+
+// Re-read before writing: returns the fresh state only if this phase still needs advancing.
+async function claimAdvance(phase) {
+  const snap = await getDoc(roomRef());
+  if (!snap.exists()) return null;
+  const fresh = snap.data();
+  return fresh.phase === phase ? fresh : null;
+}
+
+function scheduleAdvance(state, phase, work) {
+  if (advancingPhase === phase) return;
+  advancingPhase = phase;
+  clearTimeout(advanceTimer);
+  advanceTimer = setTimeout(async () => {
+    try {
+      const fresh = await claimAdvance(phase);
+      if (fresh) await work(fresh);
+    } catch (err) {
+      // leave it to the next snapshot or another client
+    } finally {
+      advancingPhase = null;
+    }
+  }, advanceDelay(state));
+}
 
 async function tryHostAdvance(state) {
-  if (state.hostId !== playerId) return;
   const playerCount = Object.keys(state.players || {}).length;
 
   if (state.phase === "p1_vote") {
     const voteCount = Object.keys(state.p1Votes || {}).length;
-    if (voteCount >= playerCount && playerCount > 0 && advancingPhase !== "p1_vote") {
-      advancingPhase = "p1_vote";
-      try {
+    if (voteCount >= playerCount && playerCount > 0) {
+      scheduleAdvance(state, "p1_vote", async (fresh) => {
+        if (Object.keys(fresh.p1Votes || {}).length < Object.keys(fresh.players || {}).length) return;
         await updateDoc(roomRef(), {
           phase: "p2_interrogate",
           p2EndsAt: Date.now() + 5 * 60 * 1000
         });
-      } finally {
-        advancingPhase = null;
-      }
+      });
     }
     return;
   }
 
   if (state.phase === "p2_interrogate") {
-    if ((state.p2EndsAt || 0) && Date.now() >= state.p2EndsAt && advancingPhase !== "p2_interrogate") {
-      advancingPhase = "p2_interrogate";
-      try {
+    if ((state.p2EndsAt || 0) && Date.now() >= state.p2EndsAt) {
+      scheduleAdvance(state, "p2_interrogate", async () => {
         await updateDoc(roomRef(), { phase: "p3_finalvote" });
-      } finally {
-        advancingPhase = null;
-      }
+      });
     }
     return;
   }
 
   if (state.phase === "p3_finalvote") {
     const voteCount = Object.keys(state.p3Votes || {}).length;
-    if (voteCount >= playerCount && playerCount > 0 && advancingPhase !== "p3_finalvote") {
-      advancingPhase = "p3_finalvote";
-      try {
-        const { votedOutId, tally } = computeMostVoted(state.p3Votes);
-        const caught  = votedOutId === state.oddId;
-        const scores  = { ...(state.scores || {}) };
-        const players = state.players || {};
+    if (voteCount >= playerCount && playerCount > 0) {
+      scheduleAdvance(state, "p3_finalvote", async (fresh) => {
+        const players = fresh.players || {};
+        if (Object.keys(fresh.p3Votes || {}).length < Object.keys(players).length) return;
+
+        const { votedOutId, tally } = computeMostVoted(fresh.p3Votes);
+        const caught = votedOutId === fresh.oddId;
+        const scores = { ...(fresh.scores || {}) };
 
         if (caught) {
           Object.keys(players).forEach(pid => {
-            if (pid !== state.oddId) scores[pid] = (scores[pid] || 0) + 1;
+            if (pid !== fresh.oddId) scores[pid] = (scores[pid] || 0) + 1;
           });
         } else {
-          scores[state.oddId] = (scores[state.oddId] || 0) + 1;
+          scores[fresh.oddId] = (scores[fresh.oddId] || 0) + 1;
         }
 
         await updateDoc(roomRef(), {
@@ -550,14 +588,12 @@ async function tryHostAdvance(state) {
           scores,
           results: {
             votedOutId, caught, tally,
-            oddId:          state.oddId,
-            normalQuestion: state.normalQuestion,
-            oddQuestion:    state.oddQuestion
+            oddId:          fresh.oddId,
+            normalQuestion: fresh.normalQuestion,
+            oddQuestion:    fresh.oddQuestion
           }
         });
-      } finally {
-        advancingPhase = null;
-      }
+      });
     }
   }
 }
@@ -736,14 +772,25 @@ function renderScores(state) {
 }
 
 // ─── PHASE 1 ──────────────────────────────────────────────────────────────────
+let questionRetry = null;
+
 function renderPhase1(state) {
   const myQ = playerId === state.oddId ? state.oddQuestion : state.normalQuestion;
   
   if (!myQ) {
-    document.getElementById("p1Question").textContent = "Loading question...";
+    document.getElementById("p1Question").textContent = "Loading question…";
     lastStateCache.votesHash = null;
+    // Nothing guarantees another snapshot, so pull the doc again shortly.
+    clearTimeout(questionRetry);
+    questionRetry = setTimeout(async () => {
+      try {
+        const snap = await getDoc(roomRef());
+        if (snap.exists() && snap.data().phase === "p1_vote") render(snap.data());
+      } catch (err) {}
+    }, 700);
     return;
   }
+  clearTimeout(questionRetry);
 
   document.getElementById("p1Question").textContent = myQ;
 
@@ -759,6 +806,8 @@ function renderPhase1(state) {
     const on   = myVote === pid;
     const b    = document.createElement("button");
     b.className = `vote-tile${on ? " selected" : ""}`;
+    b.dataset.pid = pid;
+    b.dataset.me  = isMe ? "1" : "0";
     b.innerHTML = `
       <span class="vt-av">${escapeHtml(initials(name))}</span>
       <span class="vt-name">${escapeHtml(name)}</span>
@@ -780,7 +829,17 @@ function renderPhase1(state) {
 let timerFrameId = null;
 
 function renderPhase2(state) {
-  document.getElementById("p2NormalQ").textContent = state.normalQuestion || "";
+  const q = state.normalQuestion || "";
+  document.getElementById("p2NormalQ").textContent = q || "Loading question…";
+  if (!q) {
+    clearTimeout(questionRetry);
+    questionRetry = setTimeout(async () => {
+      try {
+        const snap = await getDoc(roomRef());
+        if (snap.exists() && snap.data().phase === "p2_interrogate") render(snap.data());
+      } catch (err) {}
+    }, 700);
+  }
 
   const players = state.players || {};
   const p1      = state.p1Votes || {};
@@ -863,6 +922,8 @@ function renderPhase3(state) {
     const on   = myVote === pid;
     const b    = document.createElement("button");
     b.className = `vote-row${on ? " selected" : ""}`;
+    b.dataset.pid = pid;
+    b.dataset.me  = isMe ? "1" : "0";
     b.innerHTML = `
       <span class="vr-av">${escapeHtml(initials(name))}</span>
       <span class="vr-name">${escapeHtml(name)}</span>
