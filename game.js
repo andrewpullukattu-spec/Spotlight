@@ -705,7 +705,7 @@ function renderLobbyPlayers(state) {
   document.getElementById("playersBox").innerHTML = `
     <div class="mug-head">
       <span>In the room</span>
-      <span class="mug-count">${order.length} / 12</span>
+      <span class="mug-count">${order.length} player${order.length === 1 ? "" : "s"}</span>
     </div>
     <div class="mug-grid">${mugs}</div>`;
 }
@@ -855,15 +855,16 @@ function renderPhase2(state) {
     const rows = Object.entries(byTarget)
       .sort((a, b) => b[1].length - a[1].length)
       .map(([target, voters]) => {
-        const name   = players[target] || "?";
-        const shown  = voters.slice(0, 2).join(", ");
-        const extra  = voters.length > 2 ? ` +${voters.length - 2}` : "";
+        const name  = players[target] || "?";
+        const chips = voters.map(v => `<span class="v2-chip">${escapeHtml(v)}</span>`).join("");
         return `
           <div class="v2-row">
-            <span class="v2-av">${escapeHtml(initials(name))}</span>
-            <span class="v2-name">${escapeHtml(name)}</span>
-            <span class="v2-voters">${escapeHtml(shown + extra)}</span>
-            <span class="v2-n">${voters.length}</span>
+            <div class="v2-top">
+              <span class="v2-av">${escapeHtml(initials(name))}</span>
+              <span class="v2-name">${escapeHtml(name)}</span>
+              <span class="v2-n">${voters.length}</span>
+            </div>
+            <div class="v2-voters"><span class="v2-by">Voted by</span>${chips}</div>
           </div>`;
       }).join("");
 
