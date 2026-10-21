@@ -117,7 +117,8 @@ function activeDeckKeys(state) {
   const raw = Array.isArray(state.activeDecks) && state.activeDecks.length
     ? state.activeDecks
     : [state.activeDeck || "all"];
-  const keys = [...new Set(raw.filter(k => DECKS[k]))].sort();
+  // Skip decks that don't have enough questions yet (a round needs 2).
+  const keys = [...new Set(raw.filter(k => DECKS[k] && DECKS[k].questions.length >= 2))].sort();
   return keys.length ? keys : ["all"];
 }
 

@@ -180,6 +180,18 @@ const DECKS = {
     ]
   },
 
+  paranoia: {
+    name: "Paranoia",
+    icon: "👀",
+    desc: "Trust no one",
+    color: "#ef4444",
+    cls: "deck-paranoia",
+    questions: [
+      // Add your questions here, one per line, each in quotes with a comma after it:
+      // "Who is most likely to ...?",
+    ]
+  },
+
   // ── "All Decks" is built automatically below — do not add questions here ──
   all: {
     name: "All Decks",
