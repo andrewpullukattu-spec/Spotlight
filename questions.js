@@ -181,14 +181,20 @@ const DECKS = {
   },
 
   paranoia: {
-    name: "Paranoia",
+    name: "Casual 3",
     icon: "👀",
-    desc: "Trust no one",
+    desc: "Light-hearted",
     color: "#ef4444",
     cls: "deck-paranoia",
     questions: [
-      // Add your questions here, one per line, each in quotes with a comma after it:
-      // "Who is most likely to ...?",
+      "Who is the biggest troll?",
+      "Who is the best gift-giver?",
+      "Who is the most vibes?",
+      "Who is the biggest yapper?",
+      "Who is the best drunk?",
+      "Who is the most fun on a night out?",
+      "Who has the biggest bum?",
+      "Who is the biggest angel?",
     ]
   },
 
